@@ -46,7 +46,6 @@ jobs:
             --name ChordOPython \
             --onedir \
             --console \
-            --additional-hooks-dir=req \
             --add-data "chords_diagram:chords_diagram" \
             --add-data "datatypes:datatypes" \
             --add-data "images:images" \
@@ -104,22 +103,18 @@ jobs:
           pip install -r req/requirements.txt
           pip install pyinstaller
 
-      - name: Build ChordOPython with PyInstaller
+      - name: Build ChordOPython
         run: |
-          pyinstaller ^
-            --name ChordOPython ^
-            --onedir ^
-            --console ^
-            --additional-hooks-dir=req ^
-            --add-data "chords_diagram;chords_diagram" ^
-            --add-data "datatypes;datatypes" ^
-            --add-data "images;images" ^
-            --add-data "vamp;vamp" ^
-            --hidden-import tkinter ^
-            --hidden-import vamp ^
-            --hidden-import PIL._tkinter_finder ^
-            --distpath dist/output ^
+          mkdir -p dist/output
+          pyinstaller --name ChordOPython --onefile --noconsole `
+            --add-data "chords_diagram:chords_diagram" `
+            --add-data "datatypes:datatypes" `
+            --add-data "images:images" `
+            --add-data "vamp:vamp" `
+            --hidden-import tkinter `
+            --hidden-import PIL.* `
             main.py
+
         shell: pwsh
 
       - name: Compress artifact
@@ -176,7 +171,6 @@ jobs:
             --name ChordOPython \
             --onedir \
             --console \
-            --additional-hooks-dir=req \
             --add-data "chords_diagram:chords_diagram" \
             --add-data "datatypes:datatypes" \
             --add-data "images:images" \
