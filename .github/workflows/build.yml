@@ -74,7 +74,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.11.9'
 
       - name: Install build tools
         run: choco install 7zip -y
@@ -92,7 +92,7 @@ jobs:
 
       - name: Extract and install Vamp (Windows)
         run: |
-          7z x "vamp/vamp-windows.zip" -o"vamp/vamp-windows" -y
+          7z x "vamp/vampy-windows.zip" -o"vamp/vamp-windows" -y
           cd vamp/vamp-windows
           pip install .
         shell: pwsh
@@ -143,7 +143,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.11.9'
 
       - name: Unzip chords.zip
         run: |
