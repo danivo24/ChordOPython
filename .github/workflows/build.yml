@@ -104,12 +104,7 @@ jobs:
 
       - name: Build ChordOPython
         run: |
-<<<<<<< Updated upstream
-          pyinstaller --name ChordOPython --onefile --noconsole `
-=======
-          mkdir -p dist/output
           pyinstaller --name ChordOPython --onedir --noconsole `
->>>>>>> Stashed changes
             --add-data "chords_diagram:chords_diagram" `
             --add-data "datatypes:datatypes" `
             --add-data "images:images" `
