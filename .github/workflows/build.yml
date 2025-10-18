@@ -77,8 +77,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install build tools
-        run: |
-          choco install 7zip -y
+        run: choco install 7zip -y
 
       - name: Unzip chords.zip
         run: |
@@ -93,8 +92,8 @@ jobs:
 
       - name: Extract and install Vamp (Windows)
         run: |
-          7z x "vamp/vampy-windows.zip" -o"vamp/vampy-windows"
-          cd vamp/vampy-windows
+          7z x "vamp/vamp-windows.zip" -o"vamp/vamp-windows" -y
+          cd vamp/vamp-windows
           pip install .
         shell: pwsh
 
@@ -105,7 +104,6 @@ jobs:
 
       - name: Build ChordOPython
         run: |
-          mkdir -p dist/output
           pyinstaller --name ChordOPython --onefile --noconsole `
             --add-data "chords_diagram:chords_diagram" `
             --add-data "datatypes:datatypes" `
@@ -113,12 +111,14 @@ jobs:
             --add-data "vamp:vamp" `
             --hidden-import tkinter `
             --hidden-import PIL.* `
+            --distpath dist/output `
             main.py
-
         shell: pwsh
 
       - name: Compress artifact
-        run: powershell Compress-Archive -Path .\dist\output\* -DestinationPath .\ChordOPython-windows.zip
+        run: |
+          Compress-Archive -Path .\dist\output\* -DestinationPath .\ChordOPython-windows.zip
+        shell: pwsh
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
