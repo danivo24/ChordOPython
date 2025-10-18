@@ -109,6 +109,7 @@ jobs:
             --add-data "datatypes:datatypes" `
             --add-data "images:images" `
             --add-data "vamp:vamp" `
+            --hidden-import vamp `
             --hidden-import tkinter `
             --hidden-import PIL.* `
             --distpath dist/output `
