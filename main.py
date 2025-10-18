@@ -201,9 +201,7 @@ class ChordOPython(tk.Tk):
         output_path = os.path.join(self.configs['SONGS_FOLDER'], yt.title)
         if not os.path.exists(self.configs['SONGS_FOLDER']):
             os.makedirs(os.path.dir(output_path))
-        file_path = stream.download(output_path=output_path, filename=yt.title+".song")
-        os.remove(file_path)
-        file_path = file_path.replace(".song", ".mp3")
+        file_path = stream.download(output_path=output_path, filename=yt.title+".mp3")
         threading.Thread(target=lambda: self.process_audio(file_path, True), daemon=True).start()
 
     def _main(self):
