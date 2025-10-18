@@ -42,7 +42,6 @@ jobs:
 
       - name: Build ChordOPython with PyInstaller
         run: |
-          mkdir -p dist/output
           pyinstaller \
             --name ChordOPython \
             --onefile \
@@ -54,16 +53,17 @@ jobs:
             --add-data "vamp:vamp" \
             --hidden-import tkinter \
             --hidden-import PIL._tkinter_finder \
+            --distpath dist/output \
             main.py
 
       - name: Compress artifact
-        run: zip -r ChordOPython-ubuntu.zip ./dist/output
+        run: zip -r ChordOPython-ubuntu.zip dist/output/*
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ChordOPython-ubuntu.zip
-          path: ./dist/output
+          name: ChordOPython-ubuntu
+          path: ChordOPython-ubuntu.zip
 
   build-windows:
     runs-on: windows-latest
@@ -84,7 +84,7 @@ jobs:
 
       - name: Unzip chords.zip
         run: |
-          7z x "chords_diagram\chords.zip" -o chords_diagram" -y
+          7z x "chords_diagram\chords.zip" -o "chords_diagram" -y
           del chords_diagram\chords.zip
         shell: pwsh
 
@@ -107,7 +107,6 @@ jobs:
 
       - name: Build ChordOPython with PyInstaller
         run: |
-          mkdir dist\output
           pyinstaller ^
             --name ChordOPython ^
             --onefile ^
@@ -119,6 +118,7 @@ jobs:
             --add-data "vamp;vamp" ^
             --hidden-import tkinter ^
             --hidden-import PIL._tkinter_finder ^
+            --distpath dist/output ^
             main.py
         shell: pwsh
 
@@ -128,8 +128,8 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ChordOPython-windows.zip
-          path: .\dist\output
+          name: ChordOPython-windows
+          path: .\ChordOPython-windows.zip
 
   build-macos:
     runs-on: macos-14
@@ -172,7 +172,6 @@ jobs:
 
       - name: Build ChordOPython with PyInstaller
         run: |
-          mkdir -p dist/output
           pyinstaller \
             --name ChordOPython \
             --onefile \
@@ -184,13 +183,14 @@ jobs:
             --add-data "vamp:vamp" \
             --hidden-import tkinter \
             --hidden-import PIL._tkinter_finder \
+            --distpath dist/output \
             main.py
 
       - name: Compress artifact
-        run: zip -r ChordOPython-macos.zip ./dist/output
+        run: zip -r ChordOPython-macos.zip dist/output/*
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ChordOPython-macos.zip
-          path: ./dist/output
+          name: ChordOPython-macos
+          path: ChordOPython-macos.zip
