@@ -17,7 +17,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.11.9'
 
       - name: Unzip chords.zip
         run: |
@@ -62,7 +62,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ChordOPython-ubuntu
+          name: ChordOPython-ubuntu.zip
           path: ./dist/output
 
   build-windows:
@@ -128,7 +128,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ChordOPython-windows
+          name: ChordOPython-windows.zip
           path: .\dist\output
 
   build-macos:
@@ -192,5 +192,5 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ChordOPython-macos
+          name: ChordOPython-macos.zip
           path: ./dist/output
