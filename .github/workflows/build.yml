@@ -44,7 +44,7 @@ jobs:
         run: |
           pyinstaller \
             --name ChordOPython \
-            --onefile \
+            --onedir \
             --console \
             --additional-hooks-dir=req \
             --add-data "chords_diagram:chords_diagram" \
@@ -108,7 +108,7 @@ jobs:
         run: |
           pyinstaller ^
             --name ChordOPython ^
-            --onefile ^
+            --onedir ^
             --console ^
             --additional-hooks-dir=req ^
             --add-data "chords_diagram;chords_diagram" ^
@@ -174,7 +174,7 @@ jobs:
         run: |
           pyinstaller \
             --name ChordOPython \
-            --onefile \
+            --onedir \
             --console \
             --additional-hooks-dir=req \
             --add-data "chords_diagram:chords_diagram" \
