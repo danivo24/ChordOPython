@@ -80,8 +80,6 @@ jobs:
       - name: Install build tools
         run: |
           choco install 7zip -y
-          choco install visualstudio2022buildtools -y --includeRecommended --includeOptional
-        shell: pwsh
 
       - name: Unzip chords.zip
         run: |
