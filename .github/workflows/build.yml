@@ -84,7 +84,7 @@ jobs:
 
       - name: Unzip chords.zip
         run: |
-          7z x "chords_diagram\chords.zip" -o "chords_diagram" -y
+          7z x "chords_diagram\chords.zip" -o"chords_diagram" -y
           del chords_diagram\chords.zip
         shell: pwsh
 
