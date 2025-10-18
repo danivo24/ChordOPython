@@ -104,7 +104,7 @@ jobs:
 
       - name: Build ChordOPython
         run: |
-          pyinstaller --name ChordOPython --onedir --noconsole `
+          pyinstaller --name ChordOPython --onedir --console `
             --add-data "chords_diagram:chords_diagram" `
             --add-data "datatypes:datatypes" `
             --add-data "images:images" `
