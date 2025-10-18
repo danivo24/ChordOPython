@@ -132,10 +132,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install gettext
-        run: brew install gettext
-        shell: bash
-
       - name: Add gettext to PATH
         run: echo "/usr/local/opt/gettext/bin" >> $GITHUB_PATH
         shell: bash
