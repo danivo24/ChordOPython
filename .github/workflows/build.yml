@@ -1,0 +1,196 @@
+name: Build and Release ChordOPython
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Unzip chords.zip
+        run: |
+          unzip chords_diagram/chords.zip -d chords_diagram
+          rm chords_diagram/chords.zip
+
+      - name: Upgrade pip and install base deps
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install numpy
+
+      - name: Install Vamp plugins (Linux)
+        run: |
+          chmod +x ./vamp/vamp-linux
+          sudo cp ./vamp/vamp-linux /usr/local/bin/vamp-linux
+          echo "VAMP_PATH=$PWD/vamp/vamp-linux" >> $GITHUB_ENV
+
+      - name: Install remaining dependencies
+        run: |
+          pip install -r req/requirements.txt
+          pip install pyinstaller
+
+      - name: Build ChordOPython with PyInstaller
+        run: |
+          mkdir -p dist/output
+          pyinstaller \
+            --name ChordOPython \
+            --onefile \
+            --console \
+            --additional-hooks-dir=req \
+            --add-data "chords_diagram:chords_diagram" \
+            --add-data "datatypes:datatypes" \
+            --add-data "images:images" \
+            --add-data "vamp:vamp" \
+            --hidden-import tkinter \
+            --hidden-import PIL._tkinter_finder \
+            main.py
+
+      - name: Compress artifact
+        run: zip -r ChordOPython-ubuntu.zip ./dist/output
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChordOPython-ubuntu
+          path: ./dist/output
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install build tools
+        run: |
+          choco install 7zip -y
+          choco install visualstudio2022buildtools -y --includeRecommended --includeOptional
+        shell: pwsh
+
+      - name: Unzip chords.zip
+        run: |
+          powershell Expand-Archive -Path "chords_diagram/chords.zip" -DestinationPath "chords_diagram"
+          del chords_diagram\chords.zip
+        shell: pwsh
+
+      - name: Upgrade pip and install base deps
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install numpy
+
+      - name: Extract and install Vamp (Windows)
+        run: |
+          7z x "vamp/vampy-windows.zip" -o"vamp/vampy-windows"
+          cd vamp/vampy-windows
+          pip install .
+        shell: pwsh
+
+      - name: Install remaining dependencies
+        run: |
+          pip install -r req/requirements.txt
+          pip install pyinstaller
+
+      - name: Build ChordOPython with PyInstaller
+        run: |
+          mkdir dist\output
+          pyinstaller ^
+            --name ChordOPython ^
+            --onefile ^
+            --console ^
+            --additional-hooks-dir=req ^
+            --add-data "chords_diagram;chords_diagram" ^
+            --add-data "datatypes;datatypes" ^
+            --add-data "images;images" ^
+            --add-data "vamp;vamp" ^
+            --hidden-import tkinter ^
+            --hidden-import PIL._tkinter_finder ^
+            main.py
+        shell: pwsh
+
+      - name: Compress artifact
+        run: powershell Compress-Archive -Path .\dist\output\* -DestinationPath .\ChordOPython-windows.zip
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChordOPython-windows
+          path: .\dist\output
+
+  build-macos:
+    runs-on: macos-14
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install gettext
+        run: brew install gettext
+        shell: bash
+
+      - name: Add gettext to PATH
+        run: echo "/usr/local/opt/gettext/bin" >> $GITHUB_PATH
+        shell: bash
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Unzip chords.zip
+        run: |
+          unzip chords_diagram/chords.zip -d chords_diagram
+          rm chords_diagram/chords.zip
+
+      - name: Upgrade pip and install base deps
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install numpy
+
+      - name: Install Vamp plugins (macOS)
+        run: |
+          hdiutil attach ./vamp/vamp-macos.dmg
+          echo "VAMP_PATH=$PWD/vamp/vamp-macos.dmg" >> $GITHUB_ENV
+
+      - name: Install remaining dependencies
+        run: |
+          pip install -r req/requirements.txt
+          pip install pyinstaller
+
+      - name: Build ChordOPython with PyInstaller
+        run: |
+          mkdir -p dist/output
+          pyinstaller \
+            --name ChordOPython \
+            --onefile \
+            --console \
+            --additional-hooks-dir=req \
+            --add-data "chords_diagram:chords_diagram" \
+            --add-data "datatypes:datatypes" \
+            --add-data "images:images" \
+            --add-data "vamp:vamp" \
+            --hidden-import tkinter \
+            --hidden-import PIL._tkinter_finder \
+            main.py
+
+      - name: Compress artifact
+        run: zip -r ChordOPython-macos.zip ./dist/output
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChordOPython-macos
+          path: ./dist/output
