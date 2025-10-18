@@ -11,6 +11,7 @@ from PIL import Image, ImageTk as ImageTK
 import chord_extractor.extractors
 import librosa
 from datatypes.chord import Chord
+from pydub import AudioSegment
 class ChordButton(tk.Button):
     def __init__(self, master, chord, time, command=None, **kwargs):
         super().__init__(master, text=chord if chord != "N" else "", command=command, **kwargs)
@@ -167,7 +168,7 @@ class ChordOPython(tk.Tk):
 
         audio_ext = os.path.splitext(self.filename)[1]
         audio_copy = os.path.join(folder_path, f"{songfolder}{audio_ext}" if not songfolder.endswith(""+audio_ext) else f"{songfolder}{audio_ext}")
-        if not is_youtube:
+        if not is_youtube and self.filename != audio_copy:
             shutil.copy2(self.filename, audio_copy)
     def has_chords(self):
         if os.path.exists(self.filename):
@@ -198,11 +199,21 @@ class ChordOPython(tk.Tk):
     def download_and_process(self, url):
         yt = pytubefix.YouTube(url)
         stream = yt.streams.get_audio_only()
-        output_path = os.path.join(self.configs['SONGS_FOLDER'], yt.title)
-        if not os.path.exists(self.configs['SONGS_FOLDER']):
-            os.makedirs(os.path.dir(output_path))
-        file_path = stream.download(output_path=output_path, filename=yt.title+".mp3")
-        threading.Thread(target=lambda: self.process_audio(file_path, True), daemon=True).start()
+
+        songs_folder = self.configs['SONGS_FOLDER']
+        if not os.path.exists(songs_folder):
+            os.makedirs(songs_folder)
+
+        temp_path = os.path.join(songs_folder, yt.title + ".webm")
+        stream.download(output_path=songs_folder, filename=yt.title + ".webm")
+
+        audio = AudioSegment.from_file(temp_path)
+        output_path = os.path.join(songs_folder, yt.title + ".mp3")
+        audio.export(output_path, format="mp3")
+
+        os.remove(temp_path)
+
+        threading.Thread(target=lambda: self.process_audio(output_path, True), daemon=True).start()
 
     def _main(self):
         self.title("ChordOPython")

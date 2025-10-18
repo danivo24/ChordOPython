@@ -5,3 +5,5 @@ just_playback==0.1.8
 librosa==0.11.0
 Pillow==10.4.0
 pytubefix==8.13rc1
+pydub
+ffmpeg-python
