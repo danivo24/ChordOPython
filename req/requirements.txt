@@ -1,5 +1,5 @@
 numpy==2.3.3
-git+https://github.com/danivo24/chord-extractor-vamphost.git 
+chord-extractor
 easy_pil==0.4.0
 just_playback==0.1.8
 librosa==0.11.0
