@@ -52,6 +52,7 @@ jobs:
             --add-data "images:images" \
             --add-data "vamp:vamp" \
             --hidden-import tkinter \
+            --hidden-import vamp \
             --hidden-import PIL._tkinter_finder \
             --distpath dist/output \
             main.py
@@ -117,6 +118,7 @@ jobs:
             --add-data "images;images" ^
             --add-data "vamp;vamp" ^
             --hidden-import tkinter ^
+            --hidden-import vamp ^
             --hidden-import PIL._tkinter_finder ^
             --distpath dist/output ^
             main.py
@@ -182,6 +184,7 @@ jobs:
             --add-data "images:images" \
             --add-data "vamp:vamp" \
             --hidden-import tkinter \
+            --hidden-import vamp \
             --hidden-import PIL._tkinter_finder \
             --distpath dist/output \
             main.py
