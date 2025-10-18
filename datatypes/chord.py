@@ -26,6 +26,7 @@ class Chord:
         self.guitar_strings = ["E2", "A2", "D3", "G3", "B3", "E4"]
         self.settings = ms.SynthesizerSettings(44100)
         self.sound_font = ms.SoundFont.from_file("datatypes/sf2/AcousticGuitar.sf2")
+        self.font = ep.Font("datatypes/fonts/Poppins-Black.ttf", size=50)
         self.synth = ms.Synthesizer(self.sound_font, self.settings)
         self.set_chord_info(0)
     def note_to_midi(self, note):
@@ -154,7 +155,6 @@ class Chord:
             frets_list.append(f)
             
         fingers_list = [f if f.isdigit() else "x" for f in self.fingers]
-        font = ep.Font(path=ep.Font.poppins().path, size=50)
         frets_copy = frets_list.copy()
         for i, fr in enumerate(frets_copy):
             if fr == -1:
@@ -169,7 +169,7 @@ class Chord:
             if barres_n and f != -1:
                 frets_list[i] = f - barres_n + 1
 
-        editor.text((0, 50), "" if min(min(frets_copy), 1) == 0 else str(min(frets_copy)), color="black", font=font)
+        editor.text((0, 50), "" if min(min(frets_copy), 1) == 0 else str(min(frets_copy)), color="black", font=self.font)
         pos = {}
         for i, num in enumerate(fingers_list):
             if num in pos and num != "0":
