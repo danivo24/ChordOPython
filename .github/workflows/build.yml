@@ -22,16 +22,20 @@ jobs:
           unzip chords_diagram/chords.zip -d chords_diagram
           rm chords_diagram/chords.zip
 
-      - name: Upgrade pip and install dependencies
+      - name: Upgrade pip and install base dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install numpy cx-Freeze just_playback pytubefix librosa pydub Pillow chord_extractor
+          pip install numpy
 
       - name: Install Vamp plugins (Linux)
         run: |
           chmod +x ./vamp/vamp-linux
           sudo cp ./vamp/vamp-linux /usr/local/bin/vamp-linux
           echo "VAMP_PATH=$PWD/vamp/vamp-linux" >> $GITHUB_ENV
+
+      - name: Install remaining dependencies
+        run: |
+          pip install just_playback pytubefix librosa pydub Pillow chord_extractor cx-Freeze
 
       - name: Build ChordOPython (Linux)
         run: python setup_cxfreeze.py build
@@ -59,10 +63,10 @@ jobs:
           del chords_diagram\chords.zip
         shell: pwsh
 
-      - name: Upgrade pip and install dependencies
+      - name: Upgrade pip and install base dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install numpy cx-Freeze just_playback pytubefix librosa pydub Pillow chord_extractor
+          pip install numpy
 
       - name: Extract and install Vamp (Windows)
         run: |
@@ -70,6 +74,10 @@ jobs:
           cd vamp/vamp-windows
           pip install .
         shell: pwsh
+
+      - name: Install remaining dependencies
+        run: |
+          pip install just_playback pytubefix librosa pydub Pillow chord_extractor cx-Freeze
 
       - name: Build ChordOPython (Windows)
         run: python setup_cxfreeze.py build
@@ -98,15 +106,19 @@ jobs:
           unzip chords_diagram/chords.zip -d chords_diagram
           rm chords_diagram/chords.zip
 
-      - name: Upgrade pip and install dependencies
+      - name: Upgrade pip and install base dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install numpy cx-Freeze just_playback pytubefix librosa pydub Pillow chord_extractor
+          pip install numpy
 
       - name: Install Vamp plugins (macOS)
         run: |
           hdiutil attach ./vamp/vamp-macos.dmg
           echo "VAMP_PATH=$PWD/vamp/vamp-macos.dmg" >> $GITHUB_ENV
+
+      - name: Install remaining dependencies
+        run: |
+          pip install just_playback pytubefix librosa pydub Pillow chord_extractor cx-Freeze
 
       - name: Build ChordOPython (macOS)
         run: python setup_cxfreeze.py build
