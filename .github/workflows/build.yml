@@ -78,7 +78,12 @@ jobs:
           7z x "chords_diagram\chords.zip" -o"chords_diagram" -y
           del chords_diagram\chords.zip
         shell: pwsh
-
+      - name: Extract and install Vamp (Windows)
+        run: |
+          7z x "vamp/vampy-windows.zip" -o"vamp/vamp-windows" -y
+          cd vamp/vamp-windows
+          pip install .
+        shell: pwsh
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
