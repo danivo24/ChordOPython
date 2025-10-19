@@ -4,6 +4,8 @@ from tkinter import ttk
 from just_playback import Playback
 import pytubefix
 import threading
+import ctypes
+import subprocess
 import os
 import shutil
 import math
@@ -12,6 +14,7 @@ import chord_extractor.extractors
 import librosa
 from datatypes.chord import Chord
 from pydub import AudioSegment
+import sys
 class ChordButton(tk.Button):
     def __init__(self, master, chord, time, command=None, **kwargs):
         super().__init__(master, text=chord if chord != "N" else "", command=command, **kwargs)
@@ -27,6 +30,8 @@ class ChordButton(tk.Button):
             self.image = None
 class ChordOPython(tk.Tk):
     def __init__(self):
+        self.setup_dependencies()
+        self.setup_vamp()
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
         super().__init__()
         self.audio = AudioPlayer()
@@ -38,7 +43,158 @@ class ChordOPython(tk.Tk):
         self.configs['SONGS_FOLDER'] = 'songs'
         self.configs['ALLOWED_EXTENSIONS'] = {'mp3', 'song'}
         os.makedirs(self.configs['SONGS_FOLDER'], exist_ok=True)
+        
         self.setup_grid()
+    def setup_vamp(self):
+        import os, sys, subprocess
+
+        p = os.environ.get("VAMP_PATH")
+        if p and os.path.exists(p):
+            return  
+
+        system = sys.platform
+        try:
+            vamp_path = None
+
+            if system == "win32":
+                installer = "vamp-plugins-win.exe"
+                if not os.path.exists(installer):
+                    return
+                vamp_path = r"C:\Program Files\Vamp Plugins"
+                subprocess.run([installer, "/S"], check=True)
+                subprocess.run(["setx", "VAMP_PATH", vamp_path], shell=True)
+
+            elif system == "darwin":
+                dmg = "vamp-plugins-mac.dmg"
+                if not os.path.exists(dmg):
+                    return
+                subprocess.run(["hdiutil", "attach", dmg], check=True)
+                mount_point = "/Volumes/Vamp Plugins"
+                installer_pkg = None
+                for root, _, files in os.walk(mount_point):
+                    for f in files:
+                        if f.endswith(".pkg"):
+                            installer_pkg = os.path.join(root, f)
+                            break
+                if installer_pkg:
+                    subprocess.run(["sudo", "installer", "-pkg", installer_pkg, "-target", "/"], check=True)
+                subprocess.run(["hdiutil", "detach", mount_point], check=False)
+                vamp_path = "/Library/Audio/Plug-Ins/Vamp"
+
+            elif system.startswith("linux"):
+                installer = "vamp-plugins-linux"
+                if not os.path.exists(installer):
+                    return
+                subprocess.run(["chmod", "+x", installer], check=True)
+                subprocess.run(["sudo", "./" + installer], check=True)
+
+                possible_paths = ["/usr/local/lib/vamp", "/usr/lib/vamp", "/usr/share/vamp"]
+                vamp_path = next((p for p in possible_paths if os.path.exists(p)), possible_paths[0])
+
+            else:
+                return  
+
+            if vamp_path and os.path.exists(vamp_path):
+                os.environ["VAMP_PATH"] = vamp_path
+
+                if system == "win32":
+                    pass
+                elif system in ("darwin", "linux"):
+                    bashrc = os.path.expanduser("~/.bashrc")
+                    export_line = f'\nexport VAMP_PATH="{vamp_path}"\n'
+                    with open(bashrc, "a+") as f:
+                        f.seek(0)
+                        if export_line.strip() not in f.read():
+                            f.write(export_line)
+
+        except subprocess.CalledProcessError:
+            pass
+
+    def setup_dependencies(self):
+        system = sys.platform
+
+        if system == "win32":
+            if shutil.which("ffmpeg"):
+                return
+            try:
+                is_admin = ctypes.windll.shell32.IsUserAnAdmin()
+            except:
+                is_admin = False
+            if not is_admin:
+                script = os.path.abspath(sys.argv[0])
+                params = " ".join([f'"{a}"' for a in sys.argv[1:]])
+                ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, f'"{script}" {params}', None, 1)
+                sys.exit(0)
+            if not shutil.which("choco"):
+
+
+                try:
+                    result = subprocess.run(
+                        ["powershell", "-Command", "$PSVersionTable.PSVersion.Major"],
+                        capture_output=True, text=True
+                    )
+                    version = int(result.stdout.strip()) if result.stdout.strip().isdigit() else 0
+                except Exception:
+                    version = 0
+
+                if version >= 6:
+                    shell = "pwsh"
+                    cmd = (
+                        "[Net.ServicePointManager]::SecurityProtocol = "
+                        "[Net.SecurityProtocolType]::Tls12; "
+                        "Set-ExecutionPolicy Bypass -Scope Process -Force; "
+                        "iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))"
+                    )
+                elif version >= 3:
+                    shell = "powershell"
+                    cmd = (
+                        "Set-ExecutionPolicy Bypass -Scope Process -Force; "
+                        "[System.Net.ServicePointManager]::SecurityProtocol = "
+                        "[System.Net.ServicePointManager]::SecurityProtocol -bor 3072; "
+                        "iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))"
+                    )
+
+                try:
+                    subprocess.run([shell, "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", cmd], check=True)
+                except subprocess.CalledProcessError as e:
+                    return
+
+            print("⬇️ Instalando FFmpeg via Chocolatey...")
+            try:
+                subprocess.run(["choco", "install", "ffmpeg", "-y"], check=True)
+            except:
+                exit()
+        elif system == "darwin":
+            if shutil.which("ffmpeg"):
+                return
+
+            if not shutil.which("brew"):
+                try:
+                    subprocess.run(
+                        ["/bin/bash", "-c",
+                         "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"],
+                        check=True
+                    )
+                except subprocess.CalledProcessError as e:
+                    return
+
+            try:
+                subprocess.run(["brew", "install", "ffmpeg"], check=True)
+            except subprocess.CalledProcessError as e:
+                exit()
+
+        elif system.startswith("linux"):
+            if shutil.which("ffmpeg"):
+                print("✅ FFmpeg já está instalado.")
+                return
+
+            try:
+                subprocess.run(["sudo", "apt", "update"], check=True)
+                subprocess.run(["sudo", "apt", "install", "-y", "ffmpeg"], check=True)
+            except subprocess.CalledProcessError as e:
+                exit()
+
+
 
     def setup_grid(self):
 
