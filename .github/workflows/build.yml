@@ -80,6 +80,7 @@ jobs:
         shell: pwsh
       - name: Extract and install Vamp (Windows)
         run: |
+          pip install numpy
           7z x "vamp/vampy-windows.zip" -o"vamp/vamp-windows" -y
           cd vamp/vamp-windows
           pip install .
