@@ -44,10 +44,10 @@ jobs:
             --output-dir=dist/output \
             --remove-output \
             --enable-plugin=tk-inter \
-            --include-data-files="chords_diagram=chords_diagram" \
-            --include-data-files="datatypes=datatypes" \
-            --include-data-files="images=images" \
-            --include-data-files="vamp=vamp" \
+            --include-data-dir="chords_diagram=chords_diagram" \
+            --include-data-dir="datatypes=datatypes" \
+            --include-data-dir="images=images" \
+            --include-data-dir="vamp=vamp" \
             --output-filename=ChordOPython
 
       - name: Compress artifact
@@ -94,10 +94,10 @@ jobs:
             --output-dir=dist\output `
             --remove-output `
             --enable-plugin=tk-inter `
-            --include-data-files="chords_diagram=chords_diagram" `
-            --include-data-files="datatypes=datatypes" `
-            --include-data-files="images=images" `
-            --include-data-files="vamp=vamp" `
+            --include-data-dir="chords_diagram=chords_diagram" `
+            --include-data-dir="datatypes=datatypes" `
+            --include-data-dir="images=images" `
+            --include-data-dir="vamp=vamp" `
             --output-filename=ChordOPython
         shell: pwsh
 
@@ -147,10 +147,10 @@ jobs:
             --output-dir=dist/output \
             --remove-output \
             --enable-plugin=tk-inter \
-            --include-data-files="chords_diagram=chords_diagram" \
-            --include-data-files="datatypes=datatypes" \
-            --include-data-files="images=images" \
-            --include-data-files="vamp=vamp" \
+            --include-data-dir="chords_diagram=chords_diagram" \
+            --include-data-dir="datatypes=datatypes" \
+            --include-data-dir="images=images" \
+            --include-data-dir="vamp=vamp" \
             --output-filename=ChordOPython
 
       - name: Compress artifact
