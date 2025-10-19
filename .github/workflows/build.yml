@@ -37,7 +37,7 @@ jobs:
           cxfreeze main.py \
             --target-dir dist/output \
             --include-files chords_diagram,datatypes,images,vamp \
-            --base-name=None
+            --base-name=Console 
 
       - run: zip -r ChordOPython-ubuntu.zip dist/output/*
 
@@ -78,7 +78,7 @@ jobs:
           cxfreeze main.py `
             --target-dir dist/output `
             --include-files chords_diagram,datatypes,images,vamp `
-            --base-name=None
+            --base-name=Console
         shell: pwsh
 
       - run: |
@@ -120,7 +120,7 @@ jobs:
           cxfreeze main.py \
             --target-dir dist/output \
             --include-files chords_diagram,datatypes,images,vamp \
-            --base-name=None
+            --base-name=Console
 
       - run: zip -r ChordOPython-macos.zip dist/output/*
 
