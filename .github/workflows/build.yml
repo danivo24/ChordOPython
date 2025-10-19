@@ -17,34 +17,29 @@ jobs:
         with:
           python-version: '3.11.9'
 
-      - run: |
+      - name: Unzip chords.zip
+        run: |
           unzip chords_diagram/chords.zip -d chords_diagram
           rm chords_diagram/chords.zip
 
-      - run: |
+      - name: Upgrade pip and install dependencies
+        run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install numpy cx-Freeze
+          pip install numpy cx-Freeze just_playback pytubefix librosa pydub Pillow chord_extractor
 
-      - run: |
+      - name: Install Vamp plugins (Linux)
+        run: |
           chmod +x ./vamp/vamp-linux
           sudo cp ./vamp/vamp-linux /usr/local/bin/vamp-linux
           echo "VAMP_PATH=$PWD/vamp/vamp-linux" >> $GITHUB_ENV
 
-      - run: |
-          pip install -r req/requirements.txt
-
-      - run: |
-          cxfreeze main.py \
-            --target-dir dist/output \
-            --include-files chords_diagram,datatypes,images,vamp \
-            --base-name=Console 
-
-      - run: zip -r ChordOPython-ubuntu.zip dist/output/*
+      - name: Build ChordOPython (Linux)
+        run: python setup_cxfreeze.py build
 
       - uses: actions/upload-artifact@v4
         with:
           name: ChordOPython-ubuntu
-          path: ChordOPython-ubuntu.zip
+          path: build/exe.linux-*
 
   build-windows:
     runs-on: windows-latest
@@ -55,76 +50,68 @@ jobs:
         with:
           python-version: '3.11.9'
 
-      - run: choco install 7zip -y
+      - name: Install build tools
+        run: choco install 7zip -y
 
-      - run: |
+      - name: Unzip chords.zip
+        run: |
           7z x "chords_diagram\chords.zip" -o"chords_diagram" -y
           del chords_diagram\chords.zip
         shell: pwsh
 
-      - run: |
+      - name: Upgrade pip and install dependencies
+        run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install numpy cx-Freeze
+          pip install numpy cx-Freeze just_playback pytubefix librosa pydub Pillow chord_extractor
 
-      - run: |
+      - name: Extract and install Vamp (Windows)
+        run: |
           7z x "vamp/vampy-windows.zip" -o"vamp/vamp-windows" -y
           cd vamp/vamp-windows
           pip install .
         shell: pwsh
 
-      - run: pip install -r req/requirements.txt
-
-      - run: |
-          cxfreeze main.py `
-            --target-dir dist/output `
-            --include-files chords_diagram,datatypes,images,vamp `
-            --base-name=Console
-        shell: pwsh
-
-      - run: |
-          Compress-Archive -Path .\dist\output\* -DestinationPath .\ChordOPython-windows.zip
+      - name: Build ChordOPython (Windows)
+        run: python setup_cxfreeze.py build
         shell: pwsh
 
       - uses: actions/upload-artifact@v4
         with:
           name: ChordOPython-windows
-          path: ChordOPython-windows.zip
+          path: build/exe.win32-*
 
   build-macos:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
 
-      - run: echo "/usr/local/opt/gettext/bin" >> $GITHUB_PATH
+      - name: Add gettext to PATH
+        run: echo "/usr/local/opt/gettext/bin" >> $GITHUB_PATH
         shell: bash
 
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11.9'
 
-      - run: |
+      - name: Unzip chords.zip
+        run: |
           unzip chords_diagram/chords.zip -d chords_diagram
           rm chords_diagram/chords.zip
 
-      - run: |
+      - name: Upgrade pip and install dependencies
+        run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install numpy cx-Freeze
+          pip install numpy cx-Freeze just_playback pytubefix librosa pydub Pillow chord_extractor
 
-      - run: |
+      - name: Install Vamp plugins (macOS)
+        run: |
           hdiutil attach ./vamp/vamp-macos.dmg
           echo "VAMP_PATH=$PWD/vamp/vamp-macos.dmg" >> $GITHUB_ENV
 
-      - run: pip install -r req/requirements.txt
-
-      - run: |
-          cxfreeze main.py \
-            --target-dir dist/output \
-            --include-files chords_diagram,datatypes,images,vamp \
-            --base-name=Console
-
-      - run: zip -r ChordOPython-macos.zip dist/output/*
+      - name: Build ChordOPython (macOS)
+        run: python setup_cxfreeze.py build
 
       - uses: actions/upload-artifact@v4
         with:
           name: ChordOPython-macos
-          path: ChordOPython-macos.zip
+          path: build/exe.macosx-*
