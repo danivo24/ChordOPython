@@ -32,8 +32,9 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          pip install -r req/requirements.txt
           pip install numpy nuitka
+          pip install -r req/requirements.txt
+
 
       - name: Build with Nuitka
         run: |
@@ -81,8 +82,9 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install -r req/requirements.txt
           pip install numpy nuitka
+          pip install -r req/requirements.txt
+
 
       - name: Build with Nuitka
         run: |
@@ -133,8 +135,9 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          pip install -r req/requirements.txt
           pip install numpy nuitka
+          pip install -r req/requirements.txt
+
 
       - name: Build with Nuitka
         run: |
