@@ -14,8 +14,12 @@ except Exception:
     pass
 
 def include_if_exists(src, dest):
-    return (src, dest) if os.path.exists(src) else ()
+    """Devuelve una tupla (src, dest) si el archivo existe, de lo contrario None."""
+    if os.path.exists(src):
+        return (src, dest)
+    return None
 
+# Definir las opciones para el archivo ejecutable
 build_exe_options = {
     "packages": [
         "os",
@@ -100,10 +104,17 @@ build_exe_options = {
     "include_msvcr": True,
 }
 
+# Filtrar cualquier None de 'include_files' para evitar problemas
+build_exe_options["include_files"] = [
+    item for item in build_exe_options["include_files"] if item is not None
+]
+
+# Si el sistema operativo es Windows, se usa la base 'Win32GUI'
 base = None
 if sys.platform == "win32":
     base = "Win32GUI"
 
+# Configuración del script cx_Freeze
 setup(
     name="ChordOPython",
     version="1.0",
