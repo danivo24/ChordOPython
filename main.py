@@ -32,7 +32,6 @@ class ChordOPython(tk.Tk):
     def __init__(self):
         self.setup_dependencies()
         self.setup_vamp()
-        os.chdir(os.path.dirname(os.path.abspath(__file__)))
         super().__init__()
         self.audio = AudioPlayer()
         self.dict_playback = AudioPlayer()
