@@ -26,7 +26,6 @@ build_exe_options = {
         "numba",
         "numpy",
         "pooch",
-        "scikit_learn",
         "scipy",
         "soundfile",
         "soxr",
