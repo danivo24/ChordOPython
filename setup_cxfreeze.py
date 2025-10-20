@@ -20,7 +20,6 @@ def include_if_exists(src, dest):
         return (src, dest)
     return None
 
-# Definir las opciones para el archivo ejecutable
 build_exe_options = {
     "packages": [
         "os",
@@ -107,16 +106,13 @@ build_exe_options = {
     "include_msvcr": True,
 }
 
-# Filtrar cualquier None de 'include_files' para evitar problemas
 build_exe_options["include_files"] = [
     item for item in build_exe_options["include_files"] if item is not None
 ]
 
-# Si el sistema operativo es Windows, se usa la base 'Win32GUI'
 base = None
 
 
-# Configuración del script cx_Freeze
 setup(
     name="ChordOPython",
     version="1.0",
