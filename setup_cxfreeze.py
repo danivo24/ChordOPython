@@ -24,6 +24,7 @@ def include_if_exists(src, dest):
 build_exe_options = {
     "packages": [
         "os",
+        "easy_pil",
         "shutil",
         "math",
         "subprocess",
@@ -63,7 +64,7 @@ build_exe_options = {
     ],
     "includes": [
         "tkinter",
-        "easy-pil",
+        "easy_pil",
         "tkinter.ttk",
         "tkinter.filedialog",
         "PIL.Image",
