@@ -5,6 +5,7 @@ import scipy
 import numba
 import llvmlite
 import librosa
+import easy_pil
 from cx_Freeze import setup, Executable
 
 try:
