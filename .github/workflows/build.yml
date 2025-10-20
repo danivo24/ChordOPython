@@ -30,7 +30,7 @@ jobs:
       - name: Install Vamp plugins (Linux)
         run: |
           chmod +x ./vamp/vamp-plugins-linux
-          sudo cp ./vamp/vamp-linux /usr/local/bin/vamp-plugins-linux
+          sudo cp ./vamp/vamp-plugins-linux /usr/local/bin/vamp-plugins-linux
           echo "VAMP_PATH=$PWD/vamp/vamp-plugins-linux" >> $GITHUB_ENV
 
       - name: Install remaining dependencies
