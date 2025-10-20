@@ -62,7 +62,7 @@ build_exe_options = {
     ],
     "includes": [
         "tkinter",
-        "easy_pil",
+        "easy-pil",
         "tkinter.ttk",
         "tkinter.filedialog",
         "PIL.Image",
