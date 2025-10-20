@@ -69,12 +69,16 @@ class ChordOPython(tk.Tk):
 
                 vamp_path = r"C:\Program Files\Vamp Plugins"
                 if not os.path.exists(vamp_path):
-                    
                     if not is_admin():
-                        params = f'"{__file__}"'
-                        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, params, None, 1)
-                        sys.exit()
-                        subprocess.run([installer, "/S"], check=True)
+                        subprocess.run([
+                                "powershell", "-Command",
+                                f'Start-Process "{installer}" -ArgumentList "/S" -Verb runAs'
+                            ], check=True)
+                        subprocess.run([
+                                "powershell", "-Command",
+                                f'Start-Process "cmd.exe" -ArgumentList \'/c setx VAMP_PATH "{vamp_path}" /M\' -Verb runAs'
+                            ], check=True)
+
                 else:
                     subprocess.run(f'setx VAMP_PATH "{vamp_path}" /M', check=True, shell=True)
 
