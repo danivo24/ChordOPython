@@ -1,7 +1,7 @@
 import sys
 from cx_Freeze import setup, Executable
 
-# Opções de build
+
 build_exe_options = {
     "packages": [
         "os",
@@ -17,7 +17,31 @@ build_exe_options = {
         "pydub",
         "PIL",
         "chord_extractor",
-        "datatypes"
+        "datatypes", 
+        "audioread",
+        "decorator",
+        "joblib",
+        "lazy_loader",
+        "msgpack",
+        "numba",
+        "numpy",
+        "pooch",
+        "scikit_learn",
+        "scipy",
+        "soundfile",
+        "soxr",
+        "typing_extensions",
+        "certifi",
+        "cffi",
+        "charset_normalizer",
+        "idna",
+        "llvmlite",
+        "packaging",
+        "platformdirs",
+        "pycparser",
+        "requests",
+        "threadpoolctl",
+        "urllib3",
     ],
     "includes": [
         "tkinter",
@@ -31,7 +55,22 @@ build_exe_options = {
         "just_playback",
         "pytubefix",
         "librosa",
-        "pydub"
+        "pydub",
+        "librosa.core",
+        "librosa.display",
+        "librosa.effects",
+        "librosa.feature",
+        "librosa.onset",
+        "librosa.beat",
+        "librosa.decompose",
+        "librosa.output",
+        "librosa.segment",
+        "librosa.util",
+        "scipy.fft",
+        "scipy.io",
+        "scipy.signal",
+        "scipy.spatial",
+        "scipy.stats",
     ],
     "include_files": [
         "chords_diagram",
@@ -42,7 +81,6 @@ build_exe_options = {
     "excludes": [],
 }
 
-# Base do executável: None = console, Win32GUI = sem console no Windows
 base = None
 if sys.platform == "win32":
     base = "Win32GUI"
