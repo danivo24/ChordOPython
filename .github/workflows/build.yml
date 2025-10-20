@@ -35,7 +35,7 @@ jobs:
 
       - name: Install remaining dependencies
         run: |
-          pip install just_playback pytubefix librosa pydub Pillow chord_extractor cx-Freeze
+          pip install -r req/requirements.txt
 
       - name: Build ChordOPython (Linux)
         run: python setup_cxfreeze.py build
@@ -77,7 +77,7 @@ jobs:
 
       - name: Install remaining dependencies
         run: |
-          pip install just_playback pytubefix librosa pydub Pillow chord_extractor cx-Freeze
+          pip install -r req/requirements.txt
 
       - name: Build ChordOPython (Windows)
         run: python setup_cxfreeze.py build
@@ -118,7 +118,7 @@ jobs:
 
       - name: Install remaining dependencies
         run: |
-          pip install just_playback pytubefix librosa pydub Pillow chord_extractor cx-Freeze
+          pip install -r req/requirements.txt
 
       - name: Build ChordOPython (macOS)
         run: python setup_cxfreeze.py build
