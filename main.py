@@ -177,7 +177,7 @@ class ChordOPython(tk.Tk):
                 except subprocess.CalledProcessError as e:
                     return
 
-            print("⬇️ Instalando FFmpeg via Chocolatey...")
+            print("installing ffmpeg via choco...")
             try:
                 subprocess.run(["choco", "install", "ffmpeg", "-y"], check=True)
             except:
@@ -203,7 +203,7 @@ class ChordOPython(tk.Tk):
 
         elif system.startswith("linux"):
             if shutil.which("ffmpeg"):
-                print("✅ FFmpeg já está instalado.")
+                print("ffmpeg already installed")
                 return
 
             try:
@@ -385,7 +385,6 @@ class ChordOPython(tk.Tk):
         output_path = os.path.join(songs_folder, yt.title + ".mp3")
         audio.export(output_path, format="mp3")
 
-        os.remove(temp_path)
 
         threading.Thread(target=lambda: self.process_audio(output_path, True), daemon=True).start()
 
