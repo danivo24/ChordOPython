@@ -1,6 +1,20 @@
+import os
 import sys
+import numpy
+import scipy
+import numba
+import llvmlite
+import librosa
 from cx_Freeze import setup, Executable
 
+try:
+    import lazy_loader
+    lazy_loader.attach_stub = lambda *a, **k: None
+except Exception:
+    pass
+
+def include_if_exists(src, dest):
+    return (src, dest) if os.path.exists(src) else ()
 
 build_exe_options = {
     "packages": [
@@ -17,7 +31,7 @@ build_exe_options = {
         "pydub",
         "PIL",
         "chord_extractor",
-        "datatypes", 
+        "datatypes",
         "audioread",
         "decorator",
         "joblib",
@@ -61,7 +75,7 @@ build_exe_options = {
         "librosa.feature",
         "librosa.onset",
         "librosa.beat",
-        "librosa.decompose", 
+        "librosa.decompose",
         "librosa.segment",
         "librosa.util",
         "scipy.fft",
@@ -74,9 +88,17 @@ build_exe_options = {
         "chords_diagram",
         "datatypes",
         "images",
-        "vamp"
+        "vamp",
+        (os.path.join(numpy.__path__[0], "_core"), "numpy/_core"),
+        (os.path.join(numpy.__path__[0], "_distutils"), "numpy/_distutils"),
+        (os.path.join(scipy.__path__[0], "_lib"), "scipy/_lib"),
+        (os.path.join(numba.__path__[0], "misc"), "numba/misc"),
+        (os.path.join(llvmlite.__path__[0], "binding"), "llvmlite/binding"),
+        include_if_exists(os.path.join(numpy.__path__[0], ".libs"), "numpy/.libs"),
+        include_if_exists(os.path.join(librosa.__path__[0], "__init__.pyi"), "librosa/__init__.pyi"),
     ],
     "excludes": [],
+    "include_msvcr": True,
 }
 
 base = None
