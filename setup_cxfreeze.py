@@ -90,7 +90,6 @@ build_exe_options = {
         "images",
         "vamp",
         (os.path.join(numpy.__path__[0], "_core"), "numpy/_core"),
-        (os.path.join(numpy.__path__[0], "_distutils"), "numpy/_distutils"),
         (os.path.join(scipy.__path__[0], "_lib"), "scipy/_lib"),
         (os.path.join(numba.__path__[0], "misc"), "numba/misc"),
         (os.path.join(llvmlite.__path__[0], "binding"), "llvmlite/binding"),
