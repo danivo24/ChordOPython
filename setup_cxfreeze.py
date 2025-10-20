@@ -44,8 +44,7 @@ build_exe_options = {
 
 # Base do executável: None = console, Win32GUI = sem console no Windows
 base = None
-if sys.platform == "win32":
-    base = "Win32GUI"
+
 
 setup(
     name="ChordOPython",

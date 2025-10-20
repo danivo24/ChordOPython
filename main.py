@@ -46,7 +46,7 @@ class ChordOPython(tk.Tk):
         
         self.setup_grid()
     def setup_vamp(self):
-        import os, sys, subprocess
+        import os, sys, subprocess, ctypes
 
         p = os.environ.get("VAMP_PATH")
         if p and os.path.exists(p):
@@ -57,15 +57,27 @@ class ChordOPython(tk.Tk):
             vamp_path = None
 
             if system == "win32":
-                installer = "vamp-plugins-win.exe"
+                installer = "vamp/vamp-plugins-win.exe"
                 if not os.path.exists(installer):
                     return
+
+                def is_admin():
+                    try:
+                        return ctypes.windll.shell32.IsUserAnAdmin() != 0
+                    except Exception:
+                        return False
+
+                if not is_admin():
+                    params = f'"{__file__}"'
+                    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, params, None, 1)
+                    sys.exit()
+
                 vamp_path = r"C:\Program Files\Vamp Plugins"
                 subprocess.run([installer, "/S"], check=True)
-                subprocess.run(["setx", "VAMP_PATH", vamp_path], shell=True)
+                subprocess.run(f'setx VAMP_PATH "{vamp_path}" /M', check=True, shell=True)
 
             elif system == "darwin":
-                dmg = "vamp-plugins-mac.dmg"
+                dmg = "vamp/vamp-plugins-mac.dmg"
                 if not os.path.exists(dmg):
                     return
                 subprocess.run(["hdiutil", "attach", dmg], check=True)
@@ -82,7 +94,7 @@ class ChordOPython(tk.Tk):
                 vamp_path = "/Library/Audio/Plug-Ins/Vamp"
 
             elif system.startswith("linux"):
-                installer = "vamp-plugins-linux"
+                installer = "vamp/vamp-plugins-linux"
                 if not os.path.exists(installer):
                     return
                 subprocess.run(["chmod", "+x", installer], check=True)

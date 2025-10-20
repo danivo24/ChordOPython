@@ -29,9 +29,9 @@ jobs:
 
       - name: Install Vamp plugins (Linux)
         run: |
-          chmod +x ./vamp/vamp-linux
-          sudo cp ./vamp/vamp-linux /usr/local/bin/vamp-linux
-          echo "VAMP_PATH=$PWD/vamp/vamp-linux" >> $GITHUB_ENV
+          chmod +x ./vamp/vamp-plugins-linux
+          sudo cp ./vamp/vamp-linux /usr/local/bin/vamp-plugins-linux
+          echo "VAMP_PATH=$PWD/vamp/vamp-plugins-linux" >> $GITHUB_ENV
 
       - name: Install remaining dependencies
         run: |
@@ -113,8 +113,8 @@ jobs:
 
       - name: Install Vamp plugins (macOS)
         run: |
-          hdiutil attach ./vamp/vamp-macos.dmg
-          echo "VAMP_PATH=$PWD/vamp/vamp-macos.dmg" >> $GITHUB_ENV
+          hdiutil attach ./vamp/vamp-plugins-mac.dmg
+          echo "VAMP_PATH=$PWD/vamp/vamp-plugins-mac.dmg" >> $GITHUB_ENV
 
       - name: Install remaining dependencies
         run: |
