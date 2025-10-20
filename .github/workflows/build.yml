@@ -86,7 +86,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: ChordOPython-windows
-          path: build/exe.win32-*
+          path: build/exe.win*
 
   build-macos:
     runs-on: macos-14
