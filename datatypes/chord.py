@@ -25,6 +25,7 @@ class Chord:
         self.parse()
         self.guitar_strings = ["E2", "A2", "D3", "G3", "B3", "E4"]
         self.settings = ms.SynthesizerSettings(44100)
+        self.not_found_error = False
         self.sound_font = ms.SoundFont.from_file("datatypes/sf2/AcousticGuitar.sf2")
         self.font = ep.Font("datatypes/fonts/Poppins-Black.ttf", size=50)
         self.synth = ms.Synthesizer(self.sound_font, self.settings)
@@ -134,8 +135,10 @@ class Chord:
             type = "major"
         if type == "m":
             type = "minor"
-        
-        self.json = json.load(open(f"chords_diagram/{root}/{type}.json"))
+        try:
+            self.json = json.load(open(f"chords_diagram/{root}/{type}.json"))
+        except:
+            self.not_found_error = True 
         equivalent_json = self.json["positions"][chord_num]
         self.frets = equivalent_json.get("frets")
         self.fingers = equivalent_json.get("fingers")
@@ -143,6 +146,10 @@ class Chord:
         self.capo = equivalent_json.get("capo", 0)
     def generate_image(self):
         editor = ep.Editor("images/guitar.png")
+        if self.not_found_error:
+            editor.text((0, 50), text="Chord not found", color="red")
+            return editor.image
+
         default_pos = ((4, 116))
         def move_right(p):
             if p > 5:
