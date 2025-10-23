@@ -66,17 +66,10 @@ class ChordOPython(tk.Tk):
                 if not os.path.exists(installer):
                     return
 
-                def is_admin():
-                    try:
-                        return ctypes.windll.shell32.IsUserAnAdmin() != 0
-                    except Exception:
-                        return False
-
 
                 vamp_path = r"C:\Program Files\Vamp Plugins"
                 if not os.path.exists(vamp_path):
-                    if not is_admin():
-                        subprocess.run([
+                    subprocess.run([
                                 "powershell", "-Command",
                                 f'Start-Process "{installer}" -ArgumentList "/S" -Verb runAs'
                             ], check=True)
@@ -85,7 +78,6 @@ class ChordOPython(tk.Tk):
                             f'Start-Process "cmd.exe" -ArgumentList \'/c setx VAMP_PATH "{vamp_path}" /M\' -Verb runAs'
                         ], check=True)
 
-                    subprocess.run(f'setx VAMP_PATH "{vamp_path}" /M', check=True, shell=True)
 
             elif system == "darwin":
                 dmg = "vamp/vamp-plugins-mac.dmg"
