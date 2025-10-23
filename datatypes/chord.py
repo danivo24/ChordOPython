@@ -52,8 +52,18 @@ class Chord:
         octave = int(string[-1]) + (string_index + semitones) // 12
         return f"{new_note}{octave}"
 
-
-
+    def transpose(self, n):
+        self.chord_map = {
+            0: "C", 1: ("C#", "Db"), 2: "D", 3: ("D#", "Eb"),
+            4: "E", 5: ("F", "E#"), 6: ("F#", "Gb"), 7: "G",
+            8: ("G#", "Ab"), 9: "A", 10: ("A#", "Bb"), 11: "B"
+        }
+        for n_, c in self.chord_map.items():
+            if self.root.note in c:
+                root = self.chord_map[(list(self.chord_map.keys()))[(n + n_) % 12]][0]
+        return root + self.type
+    def transpose_self(self, n):
+        self = self.__init__(self.transpose(n))
     def generate_sound(self,
                     duration_seconds=2, velocity=100, sample_rate=44100,
                     spacing_seconds=0.07, chord_num=0):
@@ -158,7 +168,7 @@ class Chord:
         frets_copy = frets_list.copy()
         for i, fr in enumerate(frets_copy):
             if fr == -1:
-                frets_copy.remove(fr)
+                frets_copy[i] = 0
         if min(min(frets_copy), 1) == 0:
             barres = ""
             barres_n = 0

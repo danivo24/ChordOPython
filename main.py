@@ -20,14 +20,20 @@ class ChordButton(tk.Button):
         super().__init__(master, text=chord if chord != "N" else "", command=command, **kwargs)
         self.chord = chord
         self.time = time
+        if chord != "N":
+            self.chord_obj = Chord(self.chord)
 
     def generate_image(self):
-        if self.chord != "N":
-            self.chord_obj = Chord(self.chord)
+        if self.chord_obj:
             self.image = self.chord_obj.generate_image()
             return self.image
         else:
             self.image = None
+    def transpose(self, n):
+        self.chord_obj.transpose_self(n)
+        self.chord = self.chord_obj.chord
+        self.config(text=self.chord)
+
 class ChordOPython(tk.Tk):
     def __init__(self):
         self.setup_dependencies()
@@ -74,12 +80,11 @@ class ChordOPython(tk.Tk):
                                 "powershell", "-Command",
                                 f'Start-Process "{installer}" -ArgumentList "/S" -Verb runAs'
                             ], check=True)
-                        subprocess.run([
-                                "powershell", "-Command",
-                                f'Start-Process "cmd.exe" -ArgumentList \'/c setx VAMP_PATH "{vamp_path}" /M\' -Verb runAs'
-                            ], check=True)
+                    subprocess.run([
+                            "powershell", "-Command",
+                            f'Start-Process "cmd.exe" -ArgumentList \'/c setx VAMP_PATH "{vamp_path}" /M\' -Verb runAs'
+                        ], check=True)
 
-                else:
                     subprocess.run(f'setx VAMP_PATH "{vamp_path}" /M', check=True, shell=True)
 
             elif system == "darwin":
@@ -235,10 +240,11 @@ class ChordOPython(tk.Tk):
 
 
         self.canvas.configure(yscrollcommand=y_scroll.set)
-
+        self.current_chord = tk.Label(self)
         self.main_frame = tk.Frame(self.canvas)
         self.chord_img = tk.Label(self)
-        self.chord_img.grid(row=0, column=1)
+        self.current_chord.grid(row=0, column=1)
+        self.chord_img.grid(row=0, column=2)
 
         self.main_frame.bind(
             "<Configure>",
@@ -283,6 +289,7 @@ class ChordOPython(tk.Tk):
         self.bind("<Left>", lambda t: None)
         self.bind("<Right>", lambda event: None)
         self.player.entryconfig("Play/Pause", state="disabled")
+        self.tools.entryconfig("Transposition", state="disabled")
         pb = ProgressBar(type="indeterminate", master=self)
         self.filename = filepath
         c = self.has_chords()
@@ -295,6 +302,7 @@ class ChordOPython(tk.Tk):
             self.chords = ce_instance.extract(filepath)
             self.save_as_file(is_youtube)
         pause = tk.Button(self, text="Play/Pause", command=self.audio.work, state="disabled")
+
         pause.grid(row=0, column=1,sticky="new")
         pb.kill()
         self.buttons = []
@@ -318,7 +326,6 @@ class ChordOPython(tk.Tk):
             if chord not in self.chords_names and chord != "N":
                 self.chords_names.append(chord)
                 self.chords_images.append(label.generate_image())
-                print("salvou")
             label.grid(row=i // 4, column=i % 4, sticky="nsew", padx=1, pady=1)
             pb.advance(1)
         for i in range(len(chords)):
@@ -330,6 +337,8 @@ class ChordOPython(tk.Tk):
         self.bind("<Right>", lambda event: self.forward(5))
         pause.config(state="normal")
         self.player.entryconfig("Play/Pause", state="normal")
+        self.tools.entryconfig("Transposition", state="normal")
+
     def save_as_file(self, is_youtube=False):
         songfolder = os.path.splitext(os.path.basename(self.filename))[0]
         folder_path = os.path.join(self.configs['SONGS_FOLDER'], songfolder)
@@ -406,6 +415,12 @@ class ChordOPython(tk.Tk):
         self.toolbar.add_cascade(label="Tools", menu=self.tools)
         self.tools.add_command(label="Chord Dictionary", command=self.chord_dictionary)
         self.tools.add_command(label="Download from YouTube", command=self.download_youtube)
+        self.transposition = tk.Menu(self.tools, tearoff=0)
+        self.transposition.add_command(label="Transpose (+)", command=lambda type="up": self.transpose(type))
+        self.transposition.add_command(label="Transpose (-)", command=lambda type="down": self.transpose(type))
+        self.tools.add_cascade(label="Transposition", menu=self.transposition)
+        self.tools.entryconfig("Transposition", state="disabled")
+        self.player.entryconfig("Play/Pause", state="disabled")
 
         self.config(menu=self.toolbar)
         self.track()
@@ -487,7 +502,7 @@ class ChordOPython(tk.Tk):
 
 
                     
-                
+          
         self.current_chord = 0
         canvas.bind_all("<MouseWheel>", _on_mousewheel)
         canvas.bind_all("<Button-4>", _on_mousewheel)        
@@ -500,7 +515,27 @@ class ChordOPython(tk.Tk):
         self.tb.grid(row=1, column=0, ipady=1)
         self.tb_confirm.grid(row=2, column=0)
 
+    def transpose(self, type="up"):
+        symbol = "+" if type == "up" else "-"
+        response = tk.simpledialog.askstring(f"Transpose ({symbol})", f"Number of semitones to transpose {type}:").strip().rstrip()
+        if not response.isdigit():
+            tk.simpledialog.showerror("Not a number", "Entered value not a number.")
+            return
+        pb = ProgressBar(length=len(self.buttons))
+        self.chords_names = []
+        self.chords_images = []
+        for btn in self.buttons:
+            if btn.chord != "N":
+                image = btn.transpose(int(response) * (-1 if type == "down" else 1))
+                if btn.chord not in self.chords_names:
+                    self.chords_names.append(btn.chord)
+                    self.chords_images.append(btn.generate_image())
+                    
+            pb.advance(1)
+        pb.kill()
+        
 
+        
         
     def track(self):
         if self.audio.active and self.audio.playing:
@@ -510,7 +545,7 @@ class ChordOPython(tk.Tk):
             if pos + 2 <= len(self.buttons):
                 for i in range(0, 3):
                     if self.buttons[pos + i].chord and self.buttons[pos + i].chord != "N":
-                        
+                        self.current_chord.config(text=self.buttons[pos + i].chord)
                         image = ImageTK.PhotoImage(self.chords_images[self.chords_names.index(self.buttons[pos + i].chord)].resize((200, 500), Image.Resampling.LANCZOS))
                         self.chord_img.config(image=image)
                         self.chord_img.image = image
