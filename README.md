@@ -10,6 +10,13 @@ A new way to analyze songs - entirely open-source and made to run locally.
 ## Installation
 
 Extract and run the project \
+For Windows specifically:
+1- Run install_ffmpeg.ps1 via Powershell
+2- Run vamp-plugins-win.exe
+2.1- Install it on C:\Program Files\Vamp Plugins
+2.2- Run vamp_path.ps1 via Powershell
+
+
 
 ![Windows Build](https://img.shields.io/badge/Build-Windows-blue?style=plastic&label=Build&link=https%3A%2F%2Fnightly.link%2Fdanivo24%2FChordOPython%2Fworkflows%2Fbuild%2Fmain%2FChordOPython-windows) [Download](https://nightly.link/danivo24/ChordOPython/workflows/build/main/ChordOPython-windows.zip) \
 ![MacOS Build](https://img.shields.io/badge/MacOS-Build?style=plastic&logo=apple&label=Build&link=https%3A%2F%2Fnightly.link%2Fdanivo24%2FChordOPython%2Fworkflows%2Fbuild%2Fmain%2FChordOPython-macos) [Download](https://nightly.link/danivo24/ChordOPython/workflows/build/main/ChordOPython-macos.zip)  \
