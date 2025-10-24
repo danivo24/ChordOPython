@@ -96,6 +96,7 @@ build_exe_options = {
         "images",
         "vamp",
         "install_ffmpeg.ps1",
+        "vamp_path.ps1",
         (os.path.join(numpy.__path__[0], "_core"), "lib/numpy/_core"),
         (os.path.join(scipy.__path__[0], "_lib"), "lib/scipy/_lib"),
         (os.path.join(numba.__path__[0], "misc"), "lib/numba/misc"),
