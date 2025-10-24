@@ -10,7 +10,7 @@ A new way to analyze songs - entirely open-source and made to run locally.
 ## Installation
 
 Extract and run the project \
-For Windows specifically:
+For Windows specifically: \ \
 1- Run install_ffmpeg.ps1 via Powershell \
 2- Run vamp-plugins-win.exe \
 2.1- Install it on C:\Program Files\Vamp Plugins \
