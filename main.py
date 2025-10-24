@@ -15,6 +15,7 @@ import librosa
 from datatypes.chord import Chord
 from pydub import AudioSegment
 import sys
+
 class ChordButton(tk.Button):
     def __init__(self, master, chord, time, command=None, **kwargs):
         super().__init__(master, text=chord if chord != "N" else "", command=command, **kwargs)
@@ -29,6 +30,7 @@ class ChordButton(tk.Button):
             return self.image
         else:
             self.image = None
+
     def transpose(self, n):
         self.chord_obj.transpose_self(n)
         self.chord = self.chord_obj.chord
@@ -41,45 +43,23 @@ class ChordOPython(tk.Tk):
         super().__init__()
         self.audio = AudioPlayer()
         self.dict_playback = AudioPlayer()
-
         self.configs = {}
         self.filename = None
         self.beat_scroll = []
         self.configs['SONGS_FOLDER'] = 'songs'
         self.configs['ALLOWED_EXTENSIONS'] = {'mp3', 'song'}
         os.makedirs(self.configs['SONGS_FOLDER'], exist_ok=True)
-        
         self.setup_grid()
+
     def setup_vamp(self):
         import os, sys, subprocess, ctypes
-
         p = os.environ.get("VAMP_PATH")
         if p and os.path.exists(p):
-            return  
-
+            return
         system = sys.platform
         try:
             vamp_path = None
-
-            if system == "win32":
-                installer = "vamp/vamp-plugins-win.exe"
-                if not os.path.exists(installer):
-                    return
-
-
-                vamp_path = r"C:\Program Files\Vamp Plugins"
-                if not os.path.exists(vamp_path):
-                    subprocess.run([
-                                "powershell", "-Command",
-                                f'Start-Process "{installer}" -ArgumentList "/S" -Verb runAs'
-                            ], check=True)
-                    subprocess.run([
-                            "powershell", "-Command",
-                            f'Start-Process "cmd.exe" -ArgumentList \'/c setx VAMP_PATH "{vamp_path}" /M\' -Verb runAs'
-                        ], check=True)
-
-
-            elif system == "darwin":
+            if system == "darwin":
                 dmg = "vamp/vamp-plugins-mac.dmg"
                 if not os.path.exists(dmg):
                     return
@@ -95,125 +75,59 @@ class ChordOPython(tk.Tk):
                     subprocess.run(["sudo", "installer", "-pkg", installer_pkg, "-target", "/"], check=True)
                 subprocess.run(["hdiutil", "detach", mount_point], check=False)
                 vamp_path = "/Library/Audio/Plug-Ins/Vamp"
-
             elif system.startswith("linux"):
                 installer = "vamp/vamp-plugins-linux"
                 if not os.path.exists(installer):
                     return
                 subprocess.run(["chmod", "+x", installer], check=True)
                 subprocess.run(["sudo", "./" + installer], check=True)
-
                 possible_paths = ["/usr/local/lib/vamp", "/usr/lib/vamp", "/usr/share/vamp"]
                 vamp_path = next((p for p in possible_paths if os.path.exists(p)), possible_paths[0])
-
             else:
-                return  
-
+                return
             if vamp_path and os.path.exists(vamp_path):
                 os.environ["VAMP_PATH"] = vamp_path
-
-                if system == "win32":
-                    pass
-                elif system in ("darwin", "linux"):
+                if system in ("darwin", "linux"):
                     bashrc = os.path.expanduser("~/.bashrc")
                     export_line = f'\nexport VAMP_PATH="{vamp_path}"\n'
                     with open(bashrc, "a+") as f:
                         f.seek(0)
                         if export_line.strip() not in f.read():
                             f.write(export_line)
-
         except subprocess.CalledProcessError:
             pass
 
     def setup_dependencies(self):
         system = sys.platform
-
         if system == "win32":
-            if shutil.which("ffmpeg"):
-                return
-            try:
-                is_admin = ctypes.windll.shell32.IsUserAnAdmin()
-            except:
-                is_admin = False
-            if not is_admin:
-                script = os.path.abspath(sys.argv[0])
-                params = " ".join([f'"{a}"' for a in sys.argv[1:]])
-                ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, f'"{script}" {params}', None, 1)
-                sys.exit(0)
-            if not shutil.which("choco"):
-
-
+            script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "install_ffmpeg.ps1")
+            if not shutil.which("ffmpeg"):
                 try:
-                    result = subprocess.run(
-                        ["powershell", "-Command", "$PSVersionTable.PSVersion.Major"],
-                        capture_output=True, text=True
-                    )
-                    version = int(result.stdout.strip()) if result.stdout.strip().isdigit() else 0
-                except Exception:
-                    version = 0
-
-                if version >= 6:
-                    shell = "pwsh"
-                    cmd = (
-                        "[Net.ServicePointManager]::SecurityProtocol = "
-                        "[Net.SecurityProtocolType]::Tls12; "
-                        "Set-ExecutionPolicy Bypass -Scope Process -Force; "
-                        "iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))"
-                    )
-                elif version >= 3:
-                    shell = "powershell"
-                    cmd = (
-                        "Set-ExecutionPolicy Bypass -Scope Process -Force; "
-                        "[System.Net.ServicePointManager]::SecurityProtocol = "
-                        "[System.Net.ServicePointManager]::SecurityProtocol -bor 3072; "
-                        "iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))"
-                    )
-
-                try:
-                    subprocess.run([shell, "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", cmd], check=True)
-                except subprocess.CalledProcessError as e:
-                    return
-
-            print("installing ffmpeg via choco...")
-            try:
-                subprocess.run(["choco", "install", "ffmpeg", "-y"], check=True)
-            except:
-                exit()
+                    subprocess.run(["powershell", "-ExecutionPolicy", "Bypass", "-File", script_path], check=True)
+                except subprocess.CalledProcessError:
+                    sys.exit(1)
         elif system == "darwin":
             if shutil.which("ffmpeg"):
                 return
-
             if not shutil.which("brew"):
                 try:
-                    subprocess.run(
-                        ["/bin/bash", "-c",
-                         "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"],
-                        check=True
-                    )
-                except subprocess.CalledProcessError as e:
+                    subprocess.run(["/bin/bash", "-c", "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"], check=True)
+                except subprocess.CalledProcessError:
                     return
-
             try:
                 subprocess.run(["brew", "install", "ffmpeg"], check=True)
-            except subprocess.CalledProcessError as e:
+            except subprocess.CalledProcessError:
                 exit()
-
         elif system.startswith("linux"):
             if shutil.which("ffmpeg"):
-                print("ffmpeg already installed")
                 return
-
             try:
                 subprocess.run(["sudo", "apt", "update"], check=True)
                 subprocess.run(["sudo", "apt", "install", "-y", "ffmpeg"], check=True)
-            except subprocess.CalledProcessError as e:
+            except subprocess.CalledProcessError:
                 exit()
 
-
-
     def setup_grid(self):
-
-
         self.grid_rowconfigure(0, weight=1)
         for i in range(0, 100):
             self.grid_columnconfigure(i, weight=1)
@@ -223,65 +137,56 @@ class ChordOPython(tk.Tk):
         self.infobar.pack(side="bottom", fill="both", expand=True)
         container = self.container = tk.Frame(self)
         container.grid(column=99, row=0, sticky="nsew")
-
         self.canvas = tk.Canvas(container)
         self.canvas.grid(row=0, column=0, sticky="nsew")
-
         y_scroll = tk.Scrollbar(container, orient="vertical", command=self.canvas.yview, width=1)
         y_scroll.grid(row=0, column=0, sticky="ns")
-
-
         self.canvas.configure(yscrollcommand=y_scroll.set)
         self.current_chord = tk.Label(self)
         self.main_frame = tk.Frame(self.canvas)
         self.chord_img = tk.Label(self)
         self.current_chord.grid(row=0, column=1)
         self.chord_img.grid(row=0, column=2)
-
-        self.main_frame.bind(
-            "<Configure>",
-            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
-        )
-
+        self.main_frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
         self.canvas.create_window((0, 0), window=self.main_frame, anchor="nw")
-
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
-
         for i in range(0, 5):
             self.main_frame.grid_rowconfigure(i, weight=1)
         for i in range(0, 1001):
             self.main_frame.grid_columnconfigure(i, weight=1)
-
         def _on_mousewheel(event):
             if event.num == 5 or event.delta < 0:
                 self.canvas.yview_scroll(1, "unit")
             elif event.num == 4 or event.delta > 0:
                 self.canvas.yview_scroll(-1, "unit")
-
-                
         self.canvas.bind_all("<MouseWheel>", _on_mousewheel)
-        self.canvas.bind_all("<Button-4>", _on_mousewheel)        
-        self.canvas.bind_all("<Button-5>", _on_mousewheel)        
-
-
+        self.canvas.bind_all("<Button-4>", _on_mousewheel)
+        self.canvas.bind_all("<Button-5>", _on_mousewheel)
         self._main()
 
     def open_file(self):
         file_path = filedialog.askopenfilename(parent=self, filetypes=[("Audio Files", "*.mp3")], title="Choose an audio file")
         if file_path and self.allowed_file(file_path):
             threading.Thread(target=lambda: self.process_audio(file_path), daemon=True).start()
+
     def allowed_file(self, filename):
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in self.configs['ALLOWED_EXTENSIONS']
-    
+
     def process_audio(self, filepath, is_youtube=False):
         self.chords_images = []
         self.chords_names = []
         self.bind("<space>", lambda event: None)
         self.bind("<Left>", lambda t: None)
         self.bind("<Right>", lambda event: None)
-        self.player.entryconfig("Play/Pause", state="disabled")
-        self.tools.entryconfig("Transposition", state="disabled")
+        try:
+            self.player.entryconfig("Play/Pause", state="disabled")
+        except Exception:
+            pass
+        try:
+            self.tools.entryconfig("Transposition", state="disabled")
+        except Exception:
+            pass
         pb = ProgressBar(type="indeterminate", master=self)
         self.filename = filepath
         c = self.has_chords()
@@ -294,8 +199,7 @@ class ChordOPython(tk.Tk):
             self.chords = ce_instance.extract(filepath)
             self.save_as_file(is_youtube)
         pause = tk.Button(self, text="Play/Pause", command=self.audio.work, state="disabled")
-
-        pause.grid(row=0, column=1,sticky="new")
+        pause.grid(row=0, column=1, sticky="new")
         pb.kill()
         self.buttons = []
         self.audio.load_file(self.filename)
@@ -321,30 +225,37 @@ class ChordOPython(tk.Tk):
             label.grid(row=i // 4, column=i % 4, sticky="nsew", padx=1, pady=1)
             pb.advance(1)
         for i in range(len(chords)):
-            self.buttons[i].config(state="normal")
+            try:
+                self.buttons[i].config(state="normal")
+            except Exception:
+                pass
         pb.kill()
-        
         self.bind("<space>", lambda event: self.audio.work())
         self.bind("<Left>", lambda t: self.rewind(5))
         self.bind("<Right>", lambda event: self.forward(5))
         pause.config(state="normal")
-        self.player.entryconfig("Play/Pause", state="normal")
-        self.tools.entryconfig("Transposition", state="normal")
+        try:
+            self.player.entryconfig("Play/Pause", state="normal")
+        except Exception:
+            pass
+        try:
+            self.tools.entryconfig("Transposition", state="normal")
+        except Exception:
+            pass
 
     def save_as_file(self, is_youtube=False):
         songfolder = os.path.splitext(os.path.basename(self.filename))[0]
         folder_path = os.path.join(self.configs['SONGS_FOLDER'], songfolder)
         os.makedirs(folder_path, exist_ok=True)
-
         with open(os.path.join(folder_path, "chords.txt"), "w", encoding="utf-8") as f:
-            f.write(f"{self.bpm[0]}\n")
+            f.write(f"{self.bpm[0]}\n" if isinstance(self.bpm, (list, tuple)) else f"{self.bpm}\n")
             for c, t in self.chords:
                 f.write(f"{c} {t}\n")
-
         audio_ext = os.path.splitext(self.filename)[1]
-        audio_copy = os.path.join(folder_path, f"{songfolder}{audio_ext}" if not songfolder.endswith(""+audio_ext) else f"{songfolder}{audio_ext}")
+        audio_copy = os.path.join(folder_path, f"{songfolder}{audio_ext}" if not songfolder.endswith("" + audio_ext) else f"{songfolder}{audio_ext}")
         if not is_youtube and self.filename != audio_copy:
             shutil.copy2(self.filename, audio_copy)
+
     def has_chords(self):
         if os.path.exists(self.filename):
             songfolder = os.path.splitext(os.path.basename(self.filename))[0]
@@ -367,26 +278,23 @@ class ChordOPython(tk.Tk):
                 except Exception as e:
                     print(f"Error reading chords file: {e}")
                     return False
+
     def download_youtube(self):
         url = tk.simpledialog.askstring("YouTube URL", "Enter the YouTube video URL:", parent=self)
         if url:
             threading.Thread(target=lambda: self.download_and_process(url), daemon=True).start()
+
     def download_and_process(self, url):
         yt = pytubefix.YouTube(url)
         stream = yt.streams.get_audio_only()
-
         songs_folder = self.configs['SONGS_FOLDER']
         if not os.path.exists(songs_folder):
             os.makedirs(songs_folder)
-
         temp_path = os.path.join(songs_folder, yt.title + ".webm")
         stream.download(output_path=songs_folder, filename=yt.title + ".webm")
-
         audio = AudioSegment.from_file(temp_path)
         output_path = os.path.join(songs_folder, yt.title + ".mp3")
         audio.export(output_path, format="mp3")
-
-
         threading.Thread(target=lambda: self.process_audio(output_path, True), daemon=True).start()
 
     def _main(self):
@@ -398,11 +306,9 @@ class ChordOPython(tk.Tk):
         self.file.add_command(label="Open", command=self.open_file)
         self.file.add_separator()
         self.file.add_command(label="Exit", command=self.quit)
-
         self.player = tk.Menu(self.toolbar, tearoff=0)
         self.toolbar.add_cascade(label="Player", menu=self.player)
         self.player.add_command(label="Play/Pause", command=self.audio.work)
-        
         self.tools = tk.Menu(self.toolbar, tearoff=0)
         self.toolbar.add_cascade(label="Tools", menu=self.tools)
         self.tools.add_command(label="Chord Dictionary", command=self.chord_dictionary)
@@ -413,40 +319,27 @@ class ChordOPython(tk.Tk):
         self.tools.add_cascade(label="Transposition", menu=self.transposition)
         self.tools.entryconfig("Transposition", state="disabled")
         self.player.entryconfig("Play/Pause", state="disabled")
-
         self.config(menu=self.toolbar)
         self.track()
+
     def chord_dictionary(self):
         window = tk.Toplevel(self)
         container = tk.Frame(window)
         container.pack()
-
         canvas = tk.Canvas(container)
         canvas.grid(row=0, column=0, sticky="nsew")
-
-        y_scroll = tk.Scrollbar(container, orient="vertical", command=self.canvas.yview)
+        y_scroll = tk.Scrollbar(container, orient="vertical", command=canvas.yview)
         y_scroll.grid(row=0, column=10, sticky="nsew")
-
-
         canvas.configure(yscrollcommand=y_scroll.set)
-
         main_frame = tk.Frame(canvas)
-
-        main_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=self.canvas.bbox("all"))
-        )
-
+        main_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
         canvas.create_window((0, 0), window=main_frame, anchor="nw")
-
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
-
         for i in range(0, 5):
             main_frame.grid_rowconfigure(i, weight=1)
         for i in range(0, 1001):
             main_frame.grid_columnconfigure(i, weight=1)
-
         def _on_mousewheel(event):
             if event.num == 5 or event.delta < 0:
                 canvas.yview_scroll(1, "unit")
@@ -471,8 +364,6 @@ class ChordOPython(tk.Tk):
                 play = tk.Button(canvas, text="Play", command=self.dict_playback.play)
                 backward = tk.Button(canvas, text="<<", command=lambda n = self.current_chord-1: build(chord_data, n))
                 forward = tk.Button(canvas, text=">>", command=lambda n = self.current_chord+1: build(chord_data, n))
-                
-                
                 if self.current_chord == chord.get_length() - 1:
                     forward.config(state="disabled")
                 else:
@@ -490,16 +381,11 @@ class ChordOPython(tk.Tk):
                 forward.grid(row=4, column=3)
                 set_default = tk.Button(canvas, text="Set as default shape", command=lambda ch=self.current_chord: chord.switch_pos_chords(0, ch))
                 set_default.grid(row=5, column=3)
-            build(chord_data, self.current_chord)
-
-
-                    
-          
-        self.current_chord = 0
+            build(chord_data, getattr(self, "current_chord", 0))
+            self.current_chord = 0
         canvas.bind_all("<MouseWheel>", _on_mousewheel)
-        canvas.bind_all("<Button-4>", _on_mousewheel)        
+        canvas.bind_all("<Button-4>", _on_mousewheel)
         canvas.bind_all("<Button-5>", _on_mousewheel)
-
         self.tb_info = tk.Label(canvas, text="Type the name of a chord:")
         self.tb = tk.Text(canvas, height=1)
         self.tb_confirm = tk.Button(main_frame, text="Search", command = lambda: threading.Thread(target=search).start())
@@ -509,7 +395,10 @@ class ChordOPython(tk.Tk):
 
     def transpose(self, type="up"):
         symbol = "+" if type == "up" else "-"
-        response = tk.simpledialog.askstring(f"Transpose ({symbol})", f"Number of semitones to transpose {type}:").strip().rstrip()
+        response = tk.simpledialog.askstring(f"Transpose ({symbol})", f"Number of semitones to transpose {type}:")
+        if not response:
+            return
+        response = response.strip().rstrip()
         if not response.isdigit():
             tk.simpledialog.showerror("Not a number", "Entered value not a number.")
             return
@@ -518,66 +407,73 @@ class ChordOPython(tk.Tk):
         self.chords_images = []
         for btn in self.buttons:
             if btn.chord != "N":
-                image = btn.transpose(int(response) * (-1 if type == "down" else 1))
+                btn.transpose(int(response) * (-1 if type == "down" else 1))
                 if btn.chord not in self.chords_names:
                     self.chords_names.append(btn.chord)
                     self.chords_images.append(btn.generate_image())
-                    
-            pb.advance(1)
+                pb.advance(1)
         pb.kill()
-        
 
-        
-        
     def track(self):
-        if self.audio.active and self.audio.playing:
+        if getattr(self.audio, "active", False) and getattr(self.audio, "playing", False):
             pos = math.floor(self.audio.curr_pos * self.bpm / 60)
-            self.buttons[pos].config(bg="lightblue") if pos < len(self.buttons) else None
-            self.buttons[pos - 1].config(bg="white") if pos - 1 < len(self.buttons) and pos - 1 >= 0 else None
-            if pos + 2 <= len(self.buttons):
-                for i in range(0, 3):
-                    if self.buttons[pos + i].chord and self.buttons[pos + i].chord != "N":
-                        self.current_chord.config(text=self.buttons[pos + i].chord)
-                        image = ImageTK.PhotoImage(self.chords_images[self.chords_names.index(self.buttons[pos + i].chord)].resize((200, 500), Image.Resampling.LANCZOS))
-                        self.chord_img.config(image=image)
-                        self.chord_img.image = image
-                        break
-            if math.floor(self.bpm/60 * self.audio.curr_pos) % 12 == 0 and math.floor(self.bpm / 60 * self.audio.curr_pos) not in self.beat_scroll and math.floor(self.bpm / 60 * self.audio.curr_pos) != 0:
-                try:
-                    self.canvas.yview_scroll(1, "unit")
-                    self.beat_scroll.append(math.floor(self.bpm / 60 * self.audio.curr_pos))
-                except:
-                    pass
-            
+            try:
+                if pos < len(self.buttons):
+                    self.buttons[pos].config(bg="lightblue")
+            except Exception:
+                pass
+            try:
+                if pos - 1 < len(self.buttons) and pos - 1 >= 0:
+                    self.buttons[pos - 1].config(bg="white")
+            except Exception:
+                pass
+            try:
+                if pos + 2 <= len(self.buttons):
+                    for i in range(0, 3):
+                        if self.buttons[pos + i].chord and self.buttons[pos + i].chord != "N":
+                            self.current_chord.config(text=self.buttons[pos + i].chord)
+                            image = ImageTK.PhotoImage(self.chords_images[self.chords_names.index(self.buttons[pos + i].chord)].resize((200, 500), Image.Resampling.LANCZOS))
+                            self.chord_img.config(image=image)
+                            self.chord_img.image = image
+                            break
+            except Exception:
+                pass
+            try:
+                if math.floor(self.bpm/60 * self.audio.curr_pos) % 12 == 0 and math.floor(self.bpm / 60 * self.audio.curr_pos) not in self.beat_scroll and math.floor(self.bpm / 60 * self.audio.curr_pos) != 0:
+                    try:
+                        self.canvas.yview_scroll(1, "unit")
+                        self.beat_scroll.append(math.floor(self.bpm / 60 * self.audio.curr_pos))
+                    except:
+                        pass
+            except Exception:
+                pass
         if self.filename:
-            startstop = "\u25B6" if self.audio.playing else "\u23F8"
-            self.infobar.config(
-    text=f"{startstop} | "
-         f"{math.floor(self.audio.curr_pos) // 60:02}:{math.floor(self.audio.curr_pos) % 60:02}/"
-         f"{math.floor(self.audio.duration) // 60:02}:{math.floor(self.audio.duration) % 60:02} | "
-         f"{os.path.split(self.filename)[1]}"
-
-)
+            startstop = "\u25B6" if getattr(self.audio, "playing", False) else "\u23F8"
+            try:
+                self.infobar.config(text=f"{startstop} | {math.floor(self.audio.curr_pos) // 60:02}:{math.floor(self.audio.curr_pos) % 60:02}/{math.floor(self.audio.duration) // 60:02}:{math.floor(self.audio.duration) % 60:02} | {os.path.split(self.filename)[1]}")
+            except Exception:
+                pass
         self.after(50, self.track)
+
     def set_pos(self, pos):
-        if not self.audio.active:
+        if not getattr(self.audio, "active", False):
             self.audio.play()
         self.beat_scroll = []
         for b in self.buttons:
             b.config(bg="white")
         self.audio.seek(pos)
+
     def rewind(self, seconds=5):
         for b in self.buttons:
             b.config(bg="white")
         new_pos = max(0, self.audio.curr_pos - seconds)
         self.audio.seek(new_pos)
+
     def forward(self, seconds=5):
         for b in self.buttons:
             b.config(bg="white")
         new_pos = min(self.audio.duration, self.audio.curr_pos + seconds)
         self.audio.seek(new_pos)
-
-
 
 class AudioPlayer(Playback):
     def __init__(self):
@@ -598,6 +494,7 @@ class AudioPlayer(Playback):
     def forward(self, seconds=5):
         new_pos = min(self.duration, self.curr_pos + seconds)
         self.seek(new_pos)
+
 class ProgressBar(tk.Toplevel):
     def __init__(self, type="determinate", length=1, **kwargs):
         super().__init__(**kwargs)
@@ -621,9 +518,6 @@ class ProgressBar(tk.Toplevel):
             self.progress["value"] += n
             self.update_idletasks()
             self.progress_text.configure(text=f"{self.progress['value']}/{self.length}")
-
-            
-
 
 app = ChordOPython()
 app.mainloop()
