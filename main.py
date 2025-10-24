@@ -100,12 +100,7 @@ class ChordOPython(tk.Tk):
     def setup_dependencies(self):
         system = sys.platform
         if system == "win32":
-            script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "install_ffmpeg.ps1")
-            if not shutil.which("ffmpeg"):
-                try:
-                    subprocess.run(["powershell", "-ExecutionPolicy", "Bypass", "-File", script_path], check=True)
-                except subprocess.CalledProcessError:
-                    sys.exit(1)
+            return
         elif system == "darwin":
             if shutil.which("ffmpeg"):
                 return
