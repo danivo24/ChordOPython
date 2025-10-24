@@ -15,7 +15,7 @@ except Exception:
     pass
 
 def include_if_exists(src, dest):
-    """Devuelve una tupla (src, dest) si el archivo existe, de lo contrario None."""
+    
     if os.path.exists(src):
         return (src, dest)
     return None
@@ -95,6 +95,7 @@ build_exe_options = {
         "datatypes",
         "images",
         "vamp",
+        "install_ffmpeg.ps1",
         (os.path.join(numpy.__path__[0], "_core"), "lib/numpy/_core"),
         (os.path.join(scipy.__path__[0], "_lib"), "lib/scipy/_lib"),
         (os.path.join(numba.__path__[0], "misc"), "lib/numba/misc"),
